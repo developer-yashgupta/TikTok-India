@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="TikTok India - Share and discover short videos" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="./assets/icon.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <title>TikTok India</title>
+    <style>
+        /* Custom styles for web platform */
+        html, body, #root {
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            margin: 0px;
+            padding: 0px;
+            min-height: 100%;
+            background-color: #000000;
+        }
+
+        #root {
+            flex-shrink: 0;
+            flex-basis: auto;
+            flex-grow: 1;
+            display: flex;
+            flex: 1;
+        }
+
+        /* Video container styles */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #000;
+        }
+
+        /* Mobile-specific styles */
+        @media screen and (max-width: 768px) {
+            body {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            #root {
+                height: 100%;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .video-container {
+                height: calc(100vh - 120px);
+            }
+
+            video {
+                max-height: calc(100vh - 120px);
+            }
+        }
+
+        /* Desktop-specific styles */
+        @media screen and (min-width: 769px) {
+            #root {
+                max-width: 500px;
+                margin: 0 auto;
+                height: 100vh;
+                border-left: 1px solid #333;
+                border-right: 1px solid #333;
+            }
+
+            body {
+                background-color: #121212;
+            }
+
+            .video-container {
+                aspect-ratio: 9/16;
+                max-height: calc(100vh - 120px);
+            }
+
+            video {
+                max-height: calc(100vh - 120px);
+                aspect-ratio: 9/16;
+            }
+        }
+
+        /* Handle notch devices */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: min(0vmin, env(safe-area-inset-left));
+                padding-right: min(0vmin, env(safe-area-inset-right));
+                padding-top: min(0vmin, env(safe-area-inset-top));
+                padding-bottom: min(0vmin, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+    <!-- Material Icons Font -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div id="root"></div>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+</body>
+</html>
