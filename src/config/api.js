@@ -6,7 +6,7 @@ import { Platform } from 'react-native';
 // Use consistent API URL across the app
 export const API_URL = Platform.select({
   web: 'http://localhost:5000',
-  android: 'http://172.20.52.66:5000', // Android emulator localhost
+  android: 'http://172.20.52.209:5000', // Android emulator localhost
   ios: 'http://localhost:5000',
   default: 'http://localhost:5000'
 });

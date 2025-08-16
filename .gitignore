@@ -10,7 +10,6 @@ web-build/
 
 # Native
 /ios/
-/android/
 
 # Node
 npm-debug.*
