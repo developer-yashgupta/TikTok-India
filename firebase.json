@@ -1,0 +1,9 @@
+{
+  "react-native": {
+    "messaging_android_notification_channel_id": "tiktok_notifications",
+    "messaging_android_notification_channel_name": "TikTok Notifications",
+    "messaging_android_notification_channel_description": "Notifications for TikTok app",
+    "messaging_android_notification_icon": "@mipmap/ic_launcher",
+    "messaging_android_notification_sound": "default"
+  }
+}
