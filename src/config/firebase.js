@@ -15,33 +15,31 @@ import axios from './axios';
 
 // Firebase configuration - using your existing credentials
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "your-api-key",
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "your-project.firebaseapp.com",
-  databaseURL: process.env.FIREBASE_DATABASE_URL || "https://your-project-id-default-rtdb.firebaseio.com",
-  projectId: process.env.FIREBASE_PROJECT_ID || "your-project-id",
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "your-project.appspot.com",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.FIREBASE_APP_ID || "1:123456789:web:abcdef123456"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.FIREBASE_DATABASE_URL,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
 };
 
 // Validate Firebase configuration
 const validateFirebaseConfig = () => {
   const requiredFields = ['apiKey', 'projectId', 'messagingSenderId', 'appId', 'databaseURL'];
   const missingFields = requiredFields.filter(field =>
-    !firebaseConfig[field] ||
-    firebaseConfig[field] === 'your-api-key' ||
-    firebaseConfig[field] === 'your-project-id' ||
-    firebaseConfig[field] === 'https://your-project-id-default-rtdb.firebaseio.com'
+    !firebaseConfig[field] || firebaseConfig[field].trim() === ''
   );
 
   if (missingFields.length > 0) {
-    console.warn('Firebase configuration incomplete. Missing fields:', missingFields);
+    console.error('Firebase configuration incomplete. Missing or empty fields:', missingFields);
+    console.error('Please check your .env file and ensure all Firebase environment variables are set');
     return false;
   }
 
   // Additional validation for API key format
-  if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('AIzaSy')) {
-    console.error('Firebase API key appears to be malformed');
+  if (!firebaseConfig.apiKey.startsWith('AIzaSy')) {
+    console.error('Firebase API key appears to be malformed - should start with "AIzaSy"');
     return false;
   }
   return true;

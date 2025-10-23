@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 // API Configuration
-export const API_URL = 'http://192.168.0.103:5000';
+export const API_URL = 'https://tt-backend-128051342343.asia-south1.run.app';
 
 // Media Configuration
 export const CLOUDINARY_CLOUD_NAME = 'your-cloud-name';
@@ -36,8 +36,8 @@ export const USER_KEY = 'user_data';
 // Optionally read from environment when available (Expo web supports EXPO_PUBLIC_* envs)
 export const WEB_URL =
   (typeof process !== 'undefined' && process.env && (process.env.EXPO_PUBLIC_FRONTEND_URL || process.env.FRONTEND_URL))
-    || 'https://tiktok-india.vercel.app'; // Updated with a more realistic domain
-export const MOBILE_URL = 'tiktokindia://';
+    || 'https://TicToc-india.vercel.app'; // Updated with a more realistic domain
+export const MOBILE_URL = 'TicTocindia://';
 
 // Export the appropriate URL based on platform
 export const FRONTEND_URL = Platform.select({

@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Calculate video dimensions (9:16 aspect ratio for TikTok-style videos)
+// Calculate video dimensions (9:16 aspect ratio for TicToc-style videos)
 const VIDEO_WIDTH = SCREEN_WIDTH;
 const VIDEO_HEIGHT = (SCREEN_WIDTH * 16) / 9;
 

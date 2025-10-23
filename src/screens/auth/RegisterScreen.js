@@ -294,7 +294,7 @@ const RegisterScreen = ({ navigation }) => {
               <FontAwesome name="check-circle" size={50} color="#fff" />
             </View>
             <Text style={styles.successText}>Registration Successful!</Text>
-            <Text style={styles.successSubText}>Welcome to TikTok India</Text>
+            <Text style={styles.successSubText}>Welcome to TicToc India</Text>
             <TouchableOpacity
               style={styles.redirectButton}
               onPress={() => {
@@ -318,7 +318,7 @@ const RegisterScreen = ({ navigation }) => {
         <Animated.View style={[styles.content, animatedStyle]}>
           <View style={styles.header}>
             <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join the TikTok community</Text>
+            <Text style={styles.subtitle}>Join the TicToc community</Text>
           </View>
 
           <View style={styles.form}>

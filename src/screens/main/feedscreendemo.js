@@ -28,7 +28,7 @@ import axios from 'axios';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-// Mobile-like aspect ratio (9:16 like TikTok)
+// Mobile-like aspect ratio (9:16 like TicToc)
 const ASPECT_RATIO = 9/16;
 const VIDEO_HEIGHT = Platform.OS === 'web' ? Math.min(SCREEN_HEIGHT * 0.9, 900) : SCREEN_HEIGHT;
 const VIDEO_WIDTH = Platform.OS === 'web' 
@@ -545,7 +545,7 @@ const FeedScreen = () => {
   const handleShare = async (video) => {
     try {
       const result = await Share.share({
-        message: `Check out this video on TikTok India!`,
+        message: `Check out this video on TicToc India!`,
         url: video.videoUrl,
       });
       

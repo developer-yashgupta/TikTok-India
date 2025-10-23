@@ -54,7 +54,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
       } else {
         // Show success message and navigate to main app
         Alert.alert(
-          'Welcome to TikTok India! 🎉',
+          'Welcome to TicToc India! 🎉',
           'Your account has been verified successfully.',
           [
             {
@@ -350,7 +350,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
               <View style={styles.successIconContainer}>
                 <FontAwesome5 name="check-circle" size={50} color="#fff" />
               </View>
-              <Text style={styles.successTitle}>Welcome to TikTok India! 🎉</Text>
+              <Text style={styles.successTitle}>Welcome to TicToc India! 🎉</Text>
               <Text style={styles.successMessage}>Your account has been verified successfully.</Text>
               <TouchableOpacity
                 style={styles.continueButton}

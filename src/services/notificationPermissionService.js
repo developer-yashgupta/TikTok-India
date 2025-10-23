@@ -27,36 +27,40 @@ class NotificationPermissionService {
   // Initialize notification permissions on app start
   async initialize() {
     try {
-      console.log('=== NOTIFICATION PERMISSION INITIALIZATION ===');
-      
       // Check if we've already requested permissions in this session
       if (this.permissionRequested) {
-        console.log('Notification permissions already requested in this session');
         return this.permissionGranted;
       }
 
       // Check if Firebase is available
-      const apps = getApps();
-      if (apps.length === 0) {
-        console.warn('Firebase not initialized, skipping notification permission request');
+      try {
+        const apps = getApps();
+        if (apps.length === 0) {
+          return false;
+        }
+      } catch (firebaseError) {
         return false;
       }
 
       // For Android 13+ (API 33+), we need to explicitly request POST_NOTIFICATIONS
       if (Platform.OS === 'android' && Platform.Version >= 33) {
-        const androidPermission = await this.requestAndroidNotificationPermission();
-        if (!androidPermission) {
-          console.log('Android notification permission denied');
+        try {
+          const androidPermission = await this.requestAndroidNotificationPermission();
+          if (!androidPermission) {
+            return false;
+          }
+        } catch (androidError) {
+          // Silent fail - don't crash the app
           return false;
         }
       }
 
       // Request Firebase messaging permission
       const firebasePermission = await this.requestFirebaseNotificationPermission();
-      
+
       this.permissionRequested = true;
       this.permissionGranted = firebasePermission;
-      
+
       // Store the permission status
       await AsyncStorage.setItem(this.PERMISSION_KEY, JSON.stringify({
         requested: true,
@@ -67,7 +71,6 @@ class NotificationPermissionService {
       return firebasePermission;
 
     } catch (error) {
-      console.error('Error initializing notification permissions:', error);
       return false;
     }
   }
@@ -79,9 +82,20 @@ class NotificationPermissionService {
         return true; // Not applicable for iOS or if PermissionsAndroid is not available
       }
 
-      console.log('Requesting Android POST_NOTIFICATIONS permission...');
-      
+      // Check if PermissionsAndroid is properly initialized
+      if (!PermissionsAndroid.request || !PermissionsAndroid.PERMISSIONS) {
+        return true; // Skip permission request to prevent crash
+      }
+
       const permission = PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS;
+
+      if (!permission) {
+        return true; // Permission not needed
+      }
+
+      // Add longer delay to ensure React Native bridge is ready
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
       const granted = await PermissionsAndroid.request(permission, {
         title: 'Notification Permission',
         message: 'This app needs notification access to send you updates about likes, comments, and messages.',
@@ -90,44 +104,58 @@ class NotificationPermissionService {
         buttonPositive: 'OK',
       });
 
+      if (!PermissionsAndroid.RESULTS) {
+        return true;
+      }
+
       const isGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
-      console.log('Android notification permission result:', isGranted ? 'GRANTED' : 'DENIED');
-      
+
       return isGranted;
 
     } catch (error) {
-      console.error('Error requesting Android notification permission:', error);
-      return false;
+      // Return true instead of throwing to prevent app crashes
+      return true;
     }
   }
 
   // Request Firebase messaging permission
   async requestFirebaseNotificationPermission() {
     try {
-      console.log('Requesting Firebase messaging permission...');
-      
+      // Check if Firebase messaging is available
+      if (!getMessaging || !requestPermission) {
+        return true; // Skip to prevent crash
+      }
+
       const messagingInstance = getMessaging();
+
+      if (!messagingInstance) {
+        return true; // Skip to prevent crash
+      }
+
       const authStatus = await requestPermission(messagingInstance);
-      
-      console.log('Firebase messaging permission status:', authStatus);
-      
+
+      if (!AuthorizationStatus) {
+        return true;
+      }
+
       const isAuthorized = authStatus === AuthorizationStatus.AUTHORIZED ||
-                          authStatus === AuthorizationStatus.PROVISIONAL;
-      
+                           authStatus === AuthorizationStatus.PROVISIONAL;
+
       if (isAuthorized) {
-        console.log('Firebase messaging permission granted');
         return true;
       } else {
-        console.log('Firebase messaging permission denied');
-        
         // Show user-friendly message about enabling notifications in settings
-        this.showPermissionDeniedAlert();
+        try {
+          this.showPermissionDeniedAlert();
+        } catch (alertError) {
+          // Silent fail for alert errors
+        }
         return false;
       }
 
     } catch (error) {
-      console.error('Error requesting Firebase messaging permission:', error);
-      return false;
+      // Return true instead of throwing to prevent app crashes
+      return true;
     }
   }
 
@@ -157,7 +185,6 @@ class NotificationPermissionService {
              authStatus === AuthorizationStatus.PROVISIONAL;
 
     } catch (error) {
-      console.error('Error checking notification permission status:', error);
       return false;
     }
   }
@@ -222,7 +249,6 @@ class NotificationPermissionService {
       const stored = await AsyncStorage.getItem(this.PERMISSION_KEY);
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
-      console.error('Error getting stored permission info:', error);
       return null;
     }
   }
@@ -248,7 +274,6 @@ class NotificationPermissionService {
       return timeSinceLastRequest > twentyFourHours;
 
     } catch (error) {
-      console.error('Error checking if should request permission:', error);
       return true; // Default to allowing request
     }
   }
@@ -259,9 +284,52 @@ class NotificationPermissionService {
       await AsyncStorage.removeItem(this.PERMISSION_KEY);
       this.permissionRequested = false;
       this.permissionGranted = false;
-      console.log('Notification permission state reset');
     } catch (error) {
-      console.error('Error resetting permission state:', error);
+      // Silent fail
+    }
+  }
+
+  // Request Android notification permission on-demand (safer than during initialization)
+  async requestAndroidPermissionOnDemand() {
+    try {
+      if (Platform.OS !== 'android' || Platform.Version < 33) {
+        return true; // Not needed
+      }
+
+      if (!PermissionsAndroid) {
+        return true; // PermissionsAndroid not available
+      }
+
+      // Double-check PermissionsAndroid is ready
+      if (!PermissionsAndroid.request || !PermissionsAndroid.PERMISSIONS) {
+        return true; // Not ready yet
+      }
+
+      const permission = PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS;
+      if (!permission) {
+        return true; // Permission not available
+      }
+
+      // Wait for React Native bridge to be fully ready
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const granted = await PermissionsAndroid.request(permission, {
+        title: 'Notification Permission',
+        message: 'This app needs notification access to send you updates about likes, comments, and messages.',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      });
+
+      if (!PermissionsAndroid.RESULTS) {
+        return true; // Cannot determine result
+      }
+
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+
+    } catch (error) {
+      // Return true to not break functionality
+      return true;
     }
   }
 }

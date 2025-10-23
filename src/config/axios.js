@@ -4,7 +4,7 @@ import { TOKEN_KEY } from './api';
 
 // Create axios instance with custom config
 const instance = axios.create({
-  baseURL: 'http://192.168.0.103:5000/api',
+  baseURL: 'https://tt-backend-128051342343.asia-south1.run.app/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

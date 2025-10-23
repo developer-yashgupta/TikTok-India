@@ -1,6 +1,6 @@
 export default {
-  name: 'TikTok India',
-  slug: 'tiktok-india',
+  name: 'TicToc India',
+  slug: 'TicToc-india',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -13,10 +13,10 @@ export default {
   assetBundlePatterns: [
     '**/*'
   ],
-  scheme: 'tiktokindia',
+  scheme: 'TicTocindia',
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.gggroup.tiktokindia',
+    bundleIdentifier: 'com.gggroup.TicTocindia',
     buildNumber: '1',
     deploymentTarget: '13.4',
     infoPlist: {
@@ -37,8 +37,8 @@ export default {
       foregroundImage: './assets/icon.png',
       backgroundColor: '#ffffff'
     },
-    package: 'com.gggroup.tiktokindia',
-    versionCode: 1,
+    package: 'com.gggroup.TicTocindia',
+    versionCode: 2,
     permissions: [
       'INTERNET',
       'READ_EXTERNAL_STORAGE',

@@ -1,7 +1,7 @@
 
-# Firebase Setup Guide for TikTok India
+# Firebase Setup Guide for TicToc India
 
-This guide will help you set up Firebase Cloud Messaging for push notifications in your TikTok India app.
+This guide will help you set up Firebase Cloud Messaging for push notifications in your TicToc India app.
 
 ## 🚀 Quick Setup
 
@@ -9,7 +9,7 @@ This guide will help you set up Firebase Cloud Messaging for push notifications 
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Click "Create a project" or "Add project"
-3. Enter your project name (e.g., "tiktok-india")
+3. Enter your project name (e.g., "TicToc-india")
 4. Enable Google Analytics (recommended)
 5. Choose your Google Analytics account
 6. Click "Create project"
@@ -23,8 +23,8 @@ This guide will help you set up Firebase Cloud Messaging for push notifications 
 ### 3. Add Android App
 
 1. In Firebase Console, click "Add app" → Android icon
-2. Package name: `com.gggroup.tiktokindia`
-3. App nickname: "TikTok India Android"
+2. Package name: `com.gggroup.TicTocindia`
+3. App nickname: "TicToc India Android"
 4. Click "Register app"
 5. Download `google-services.json`
 6. Place it in: `android/app/google-services.json` (replace the existing file)
@@ -32,11 +32,11 @@ This guide will help you set up Firebase Cloud Messaging for push notifications 
 ### 4. Add iOS App (Optional)
 
 1. In Firebase Console, click "Add app" → iOS icon
-2. Bundle ID: `com.gggroup.tiktokindia`
-3. App nickname: "TikTok India iOS"
+2. Bundle ID: `com.gggroup.TicTocindia`
+3. App nickname: "TicToc India iOS"
 4. Click "Register app"
 5. Download `GoogleService-Info.plist`
-6. Place it in: `ios/tiktokclone/GoogleService-Info.plist` (replace the existing file)
+6. Place it in: `ios/TicTocclone/GoogleService-Info.plist` (replace the existing file)
 
 ### 5. Configure Environment Variables
 
@@ -53,7 +53,7 @@ FIREBASE_MESSAGING_SENDER_ID=123456789
 FIREBASE_APP_ID=1:123456789:web:abcdef123456
 
 # Backend API (update if different)
-API_URL=http://192.168.0.103:5000/api
+API_URL=https://tt-backend-128051342343.asia-south1.run.app/api
 ```
 
 ### 6. Update google-services.json
@@ -72,7 +72,7 @@ Replace the placeholder values in `android/app/google-services.json` with your a
       "client_info": {
         "mobilesdk_app_id": "YOUR_MOBILE_SDK_APP_ID",
         "android_client_info": {
-          "package_name": "com.gggroup.tiktokindia"
+          "package_name": "com.gggroup.TicTocindia"
         }
       },
       "oauth_client": [
@@ -94,7 +94,7 @@ Replace the placeholder values in `android/app/google-services.json` with your a
 
 ### 7. Update GoogleService-Info.plist (iOS)
 
-Replace the placeholder values in `ios/tiktokclone/GoogleService-Info.plist`:
+Replace the placeholder values in `ios/TicTocclone/GoogleService-Info.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -112,7 +112,7 @@ Replace the placeholder values in `ios/tiktokclone/GoogleService-Info.plist`:
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.gggroup.tiktokindia</string>
+	<string>com.gggroup.TicTocindia</string>
 	<key>PROJECT_ID</key>
 	<string>your-project-id</string>
 	<key>STORAGE_BUCKET</key>

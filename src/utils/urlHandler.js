@@ -200,32 +200,32 @@ export const generateShareUrl = (screen, params = {}) => {
       
       return {
         url: `${baseUrl}/video/${params.videoId}`,
-        message: `${videoDescription}\n\nWatch on TikTok India: `,
+        message: `${videoDescription}\n\nWatch on TicToc India: `,
         title: 'Share Video',
-        hashtags: '#TikTokIndia #ShortVideos'
+        hashtags: '#TicTocIndia #ShortVideos'
       };
     case 'profile':
       const username = params.username || 'User';
       return {
         url: `${baseUrl}/user/${params.userId}`,
-        message: `Check out @${username} on TikTok India: `,
+        message: `Check out @${username} on TicToc India: `,
         title: 'Share Profile',
-        hashtags: '#TikTokIndia #Profile'
+        hashtags: '#TicTocIndia #Profile'
       };
     case 'hashtag':
       const tag = params.tag || 'trending';
       return {
         url: `${baseUrl}/hashtag/${tag}`,
-        message: `Discover amazing #${tag} videos on TikTok India: `,
+        message: `Discover amazing #${tag} videos on TicToc India: `,
         title: 'Share Hashtag',
-        hashtags: `#${tag} #TikTokIndia`
+        hashtags: `#${tag} #TicTocIndia`
       };
     default:
       return {
         url: baseUrl,
-        message: 'Join TikTok India and discover amazing short videos: ',
-        title: 'TikTok India',
-        hashtags: '#TikTokIndia #ShortVideos #Trending'
+        message: 'Join TicToc India and discover amazing short videos: ',
+        title: 'TicToc India',
+        hashtags: '#TicTocIndia #ShortVideos #Trending'
       };
   }
 };
@@ -303,8 +303,8 @@ export const isValidDeepLink = (url) => {
   
   try {
     const urlObj = new URL(url);
-    const isAppScheme = urlObj.protocol === 'tiktokindia:';
-    const isWebUrl = urlObj.hostname && urlObj.hostname.includes('tiktok-india');
+    const isAppScheme = urlObj.protocol === 'TicTocindia:';
+    const isWebUrl = urlObj.hostname && urlObj.hostname.includes('TicToc-india');
     
     return isAppScheme || isWebUrl;
   } catch (e) {

@@ -31,7 +31,7 @@ import optimizedVideoPreloader from '../../utils/optimizedVideoPreloader';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-// Mobile-like aspect ratio (9:16 like TikTok)
+// Mobile-like aspect ratio (9:16 like TicToc)
 const ASPECT_RATIO = 9/16;
 const VIDEO_HEIGHT = Platform.OS === 'web' ? Math.min(SCREEN_HEIGHT * 0.9, 900) : SCREEN_HEIGHT;
 const VIDEO_WIDTH = Platform.OS === 'web' 
@@ -382,16 +382,16 @@ const FeedScreen = () => {
       setLoading(true);
       setError(null);
       setPage(1); // Reset page number
-      
+
       // Get video ID from URL or route params
       const videoId = route.params?.videoId;
-      
+
       if (videoId) {
         console.log('Loading shared video:', videoId);
         try {
           // First fetch the shared video details
           const videoResponse = await api.get(`/videos/${videoId}`);
-          
+
           if (!videoResponse.data.success) {
             setError('Video not found');
             return;
@@ -406,13 +406,13 @@ const FeedScreen = () => {
               sharedVideoId: videoId
             }
           });
-          
+
           if (feedResponse.data.success) {
             if (feedResponse.data.videos && feedResponse.data.videos.length > 0) {
               setVideos(feedResponse.data.videos);
               setPage(2);
               setHasMore(feedResponse.data.hasMore);
-              
+
               // Ensure we're at the top to show shared video
               flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
             } else {
@@ -423,7 +423,16 @@ const FeedScreen = () => {
           }
         } catch (err) {
           console.error('Error loading shared video:', err);
-          setError(err.response?.data?.message || 'Failed to load shared video');
+
+          // Handle backend connectivity issues gracefully
+          if (err.isBackendError || err.isNetworkError) {
+            setError('Unable to connect to server. Please check your internet connection and try again.');
+          } else if (err.response?.status === 401) {
+            // Handle unauthorized error - logout user
+            logout();
+          } else {
+            setError(err.response?.data?.message || 'Failed to load shared video');
+          }
           return;
         }
       } else {
@@ -436,9 +445,9 @@ const FeedScreen = () => {
               limit: 10
             }
           });
-          
+
           console.log('Feed response:', response.data);
-          
+
           if (response.data.success) {
             if (response.data.videos && response.data.videos.length > 0) {
               setVideos(response.data.videos);
@@ -456,7 +465,11 @@ const FeedScreen = () => {
           }
         } catch (err) {
           console.error('Error loading feed:', err);
-          if (err.response?.status === 401) {
+
+          // Handle backend connectivity issues gracefully
+          if (err.isBackendError || err.isNetworkError) {
+            setError('Unable to connect to server. Please check your internet connection and try again.');
+          } else if (err.response?.status === 401) {
             // Handle unauthorized error - logout user
             logout();
           } else {
@@ -466,7 +479,11 @@ const FeedScreen = () => {
       }
     } catch (error) {
       console.error('Error in loadInitialData:', error);
-      if (error.response?.status === 401) {
+
+      // Handle backend connectivity issues gracefully
+      if (error.isBackendError || error.isNetworkError) {
+        setError('Unable to connect to server. Please check your internet connection and try again.');
+      } else if (error.response?.status === 401) {
         // Handle unauthorized error - logout user
         logout();
       } else {
@@ -530,7 +547,7 @@ const FeedScreen = () => {
   // Handle pagination
   const fetchMoreVideos = async () => {
     if (loading || !hasMore) return;
-    
+
     try {
       setLoading(true);
       const feedEndpoint = activeTab === 'following' ? '/videos/feed/following' : '/videos/feed/foryou';
@@ -540,9 +557,9 @@ const FeedScreen = () => {
           limit: 10
         }
       });
-      
+
       console.log('Fetch more response:', response.data);
-      
+
       if (response.data.success) {
         if (response.data.videos && response.data.videos.length > 0) {
           setVideos(prev => [...prev, ...response.data.videos]);
@@ -556,7 +573,12 @@ const FeedScreen = () => {
       }
     } catch (error) {
       console.error('Error fetching more videos:', error);
-      if (error.response?.status === 401) {
+
+      // Handle backend connectivity issues gracefully
+      if (error.isBackendError || error.isNetworkError) {
+        console.log('Backend connectivity issue - stopping pagination');
+        setHasMore(false); // Stop trying to load more
+      } else if (error.response?.status === 401) {
         // Handle unauthorized error - logout user
         logout();
       } else {
@@ -572,7 +594,7 @@ const FeedScreen = () => {
     try {
       console.log('Handling like for video:', videoId);
       const response = await api.put(`/videos/${videoId}/like`);
-      
+
       if (response.data.success) {
         setVideos(prevVideos =>
           prevVideos.map(video =>
@@ -588,7 +610,15 @@ const FeedScreen = () => {
       }
     } catch (error) {
       console.error('Error toggling like:', error);
-      // Silently handle like errors - don't show alert
+
+      // Handle backend connectivity issues gracefully
+      if (error.isBackendError || error.isNetworkError) {
+        console.log('Backend connectivity issue - like action failed silently');
+        // Don't show error to user for like actions when backend is down
+      } else {
+        // For other errors, you might want to show a toast notification
+        console.error('Like action failed:', error.response?.data?.message || error.message);
+      }
     }
   };
 
@@ -603,7 +633,14 @@ const FeedScreen = () => {
         Alert.alert('Error', 'Failed to load comments');
       }
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to load comments');
+      console.error('Error loading comments:', error);
+
+      // Handle backend connectivity issues gracefully
+      if (error.isBackendError || error.isNetworkError) {
+        Alert.alert('Connection Error', 'Unable to load comments. Please check your internet connection.');
+      } else {
+        Alert.alert('Error', error.response?.data?.message || 'Failed to load comments');
+      }
     }
   };
 
@@ -683,7 +720,14 @@ const FeedScreen = () => {
       }
     } catch (error) {
       console.error('Error following user:', error);
-      setError(error.response?.data?.message || 'Failed to follow user');
+
+      // Handle backend connectivity issues gracefully
+      if (error.isBackendError || error.isNetworkError) {
+        console.log('Backend connectivity issue - follow action failed silently');
+        // Don't show error for follow actions when backend is down
+      } else {
+        setError(error.response?.data?.message || 'Failed to follow user');
+      }
     }
   };
 

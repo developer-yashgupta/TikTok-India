@@ -5,10 +5,10 @@ import { Platform } from 'react-native';
 
 // Use consistent API URL across the app
 export const API_URL = Platform.select({
-  web: 'http://192.168.0.103:5000',
-  android: 'http://192.168.0.103:5000', // Android emulator localhost
-  ios: 'http://192.168.0.103:5000',
-  default: 'http://192.168.0.103:5000'
+  web: 'https://tt-backend-128051342343.asia-south1.run.app',
+  android: 'https://tt-backend-128051342343.asia-south1.run.app', // Android emulator localhost
+  ios: 'https://tt-backend-128051342343.asia-south1.run.app',
+  default: 'https://tt-backend-128051342343.asia-south1.run.app'
 });
 
 export const BASE_URL = `${API_URL}/api`;
@@ -77,8 +77,23 @@ api.interceptors.response.use(
         // You might want to trigger a logout action here
       }
     } else if (error.request) {
-      // Request made but no response
-      console.error('API No Response Error:', error.request);
+      // Request made but no response - likely backend server down
+      console.error('API No Response Error - server may be down:', error.request);
+
+      // Check if this is a network connectivity issue
+      const netInfo = await NetInfo.fetch();
+      if (!netInfo.isConnected) {
+        console.error('No internet connection detected');
+        const networkError = new Error('No internet connection');
+        networkError.isNetworkError = true;
+        return Promise.reject(networkError);
+      }
+
+      // Backend server is likely down - create specific error
+      const backendError = new Error('Backend server is not responding');
+      backendError.isBackendError = true;
+      backendError.originalError = error;
+      return Promise.reject(backendError);
     } else {
       // Error in request setup
       console.error('API Setup Error:', error.message);

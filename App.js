@@ -65,7 +65,7 @@ function FirebaseMessagingSetup({ navigationRef, firebaseSubscriptionsRef }) {
         firebaseSubscriptionsRef.current = subscriptions;
                 
       } catch (error) {
-        console.error('❌ Error setting up Firebase messaging:', error);
+        // Silent fail - don't crash the app
       }
     };
 
@@ -98,7 +98,7 @@ function FirebaseMessagingSetup({ navigationRef, firebaseSubscriptionsRef }) {
             await registerDeviceToken(user._id, firebaseSubscriptionsRef.current.token);
           }
         } catch (error) {
-          console.error('❌ Error updating user token registration:', error);
+          // Silent fail - don't crash the app
         }
       }
     };
@@ -135,37 +135,34 @@ export default function App() {
     const initializeApp = async () => {
       try {
         // Request essential permissions first (non-blocking)
-        PermissionManager.requestInitialPermissions().catch(err => 
-          console.log('Permission request completed with some failures:', err.message)
-        );
+        PermissionManager.requestInitialPermissions().catch(err => {
+          // Silent fail - don't crash the app
+        });
 
         // Initialize Firebase in background (non-blocking)
         safeInitializeFirebase()
           .then(firebaseInitialized => {
             if (firebaseInitialized) {
-                            
-              // Initialize notification permissions in background
-              notificationPermissionService.shouldRequestPermission()
-                .then(shouldRequest => {
+              // CRITICAL FIX: Delay notification permission initialization significantly
+              // to prevent Android permission callback crash
+              setTimeout(async () => {
+                try {
+                  const shouldRequest = await notificationPermissionService.shouldRequestPermission();
+
                   if (shouldRequest) {
-                    return notificationPermissionService.initialize();
+                    await notificationPermissionService.initialize();
                   }
-                  return false;
-                })
-                .then(permissionGranted => {
-                  // Permission handled
-                })
-                .catch(err => console.log('Notification permission setup completed:', err.message));
-            } else {
-              console.log('Firebase initialization skipped (app will continue normally)');
+                } catch (err) {
+                  // Silent fail - don't crash the app
+                }
+              }, 8000); // 8 second delay to ensure bridge is ready
             }
           })
           .catch(error => {
-            console.log('Firebase initialization failed (app will continue normally):', error.message);
+            // Silent fail - don't crash the app
           });
 
       } catch (error) {
-        console.log('App initialization completed with some issues:', error.message);
         // Continue with app initialization regardless of errors
       }
     };
