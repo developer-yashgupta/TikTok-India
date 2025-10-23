@@ -5,12 +5,102 @@
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
+<<<<<<< HEAD
     <meta name="description" content="TikTok India - Share and discover short videos" />
+=======
+    <meta name="description" content="TicToc India - Share and discover short videos" />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TicToc India" />
+    <meta property="og:title" content="TicToc India" />
+    <meta property="og:description" content="Share and discover short videos on TicToc India" />
+    <meta property="og:image" content="/assets/splash.png" />
+    <meta property="og:url" content="/" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TicToc India" />
+    <meta name="twitter:description" content="Share and discover short videos on TicToc India" />
+    <meta name="twitter:image" content="/assets/splash.png" />
+>>>>>>> master
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="./assets/icon.png" />
     <link rel="manifest" href="./manifest.json" />
+<<<<<<< HEAD
     <title>TikTok India</title>
+=======
+    <title>TicToc India</title>
+    <script>
+      (function() {
+        try {
+          var ua = (navigator.userAgent || '').toLowerCase();
+          var isIOS = /iphone|ipad|ipod/.test(ua);
+          var isAndroid = /android/.test(ua);
+          var isMobile = isIOS || isAndroid;
+          if (!isMobile) return;
+
+          var path = window.location.pathname || '/';
+          // Deep-linkable paths: /video/:id, /user/:id, /hashtag/:tag, /messages, /search
+          var match = path.match(/^\/(video|user|hashtag|messages|search|discover|upload|inbox|me)\/?([^\/]*)/);
+          if (!match) return;
+
+          var scheme = 'TicTocindia://';
+          var deeplink = scheme + match[1] + (match[2] ? '/' + match[2] : '');
+
+          // Function to check if app is installed and handle fallback
+          var checkAppInstalled = function() {
+            var startTime = Date.now();
+            var timeout = 2000; // 2 second timeout
+            
+            var checkInterval = setInterval(function() {
+              if (Date.now() - startTime > timeout) {
+                clearInterval(checkInterval);
+                // App not installed or didn't respond, stay on web
+                console.log('App not available, staying on web');
+                return;
+              }
+              
+              // Check if page is hidden (app opened)
+              if (document.hidden || document.webkitHidden) {
+                clearInterval(checkInterval);
+                console.log('App opened successfully');
+              }
+            }, 100);
+          };
+
+          if (isAndroid) {
+            // Android: try intent with fallback
+            try {
+              // First try to open the app
+              window.location.href = deeplink;
+              checkAppInstalled();
+            } catch (e) {
+              console.log('Android deep link failed, staying on web');
+            }
+          } else if (isIOS) {
+            // iOS: use hidden iframe technique
+            var iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = deeplink;
+            document.body.appendChild(iframe);
+            
+            // Check if app opened
+            checkAppInstalled();
+            
+            // Clean up iframe
+            setTimeout(function() {
+              try { 
+                document.body.removeChild(iframe); 
+              } catch(e) {}
+            }, 2000);
+          }
+        } catch (e) {
+          console.log('Deep linking error:', e);
+        }
+      })();
+    </script>
+>>>>>>> master
     <style>
         /* Custom styles for web platform */
         html, body, #root {

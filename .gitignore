@@ -9,6 +9,10 @@ dist/
 web-build/
 
 # Native
+<<<<<<< HEAD
+=======
+/android/
+>>>>>>> master
 /ios/
 
 # Node
@@ -37,7 +41,11 @@ yarn-error.log*
 # Environment variables
 .env
 .env.*
+<<<<<<< HEAD
 !.env.example
+=======
+.env.example
+>>>>>>> master
 
 # IDE
 .idea/

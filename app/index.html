@@ -7,7 +7,11 @@
       name="viewport" 
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
     />
+<<<<<<< HEAD
     <title>TikTok India</title>
+=======
+    <title>TicToc India</title>
+>>>>>>> master
     <style>
       /* These styles make the body full-height */
       html, body {
@@ -45,6 +49,22 @@
     <script>
       // Check if JavaScript is enabled
       document.documentElement.classList.add('js-enabled');
+<<<<<<< HEAD
+=======
+      
+      // Register Firebase service worker for background notifications
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            .then(function(registration) {
+              console.log('Firebase SW registered with scope: ', registration.scope);
+            })
+            .catch(function(error) {
+              console.log('Firebase SW registration failed: ', error);
+            });
+        });
+      }
+>>>>>>> master
     </script>
     <noscript>
       <div style="background-color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">

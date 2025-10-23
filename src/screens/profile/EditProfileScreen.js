@@ -199,13 +199,21 @@ const EditProfileScreen = ({ navigation, route }) => {
         Alert.alert('Success', 'Profile updated successfully');
         navigation.navigate('ProfileMain', { refresh: true });
       } else {
+<<<<<<< HEAD
         throw new Error(response.data.message || 'Failed to update profile');
+=======
+        throw new Error(response.data.message || response.data.msg || 'Failed to update profile');
+>>>>>>> master
       }
     } catch (error) {
       console.error('Error updating profile:', error);
       Alert.alert(
         'Error',
+<<<<<<< HEAD
         error.response?.data?.message || 'Failed to update profile'
+=======
+        error.response?.data?.message || error.response?.data?.msg || 'Failed to update profile'
+>>>>>>> master
       );
     } finally {
       setLoading(false);

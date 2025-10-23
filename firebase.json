@@ -1,0 +1,9 @@
+{
+  "react-native": {
+    "messaging_android_notification_channel_id": "TicToc_notifications",
+    "messaging_android_notification_channel_name": "TicToc Notifications",
+    "messaging_android_notification_channel_description": "Notifications for TicToc app",
+    "messaging_android_notification_icon": "@mipmap/ic_launcher",
+    "messaging_android_notification_sound": "default"
+  }
+}

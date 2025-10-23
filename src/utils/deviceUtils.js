@@ -1,6 +1,10 @@
 import { Dimensions, Platform, PixelRatio } from 'react-native';
 import * as Device from 'expo-device';
 import NetInfo from '@react-native-community/netinfo';
+<<<<<<< HEAD
+=======
+import { VIDEO_CONFIG } from '../config/videoConfig';
+>>>>>>> master
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -43,6 +47,7 @@ export const getNetworkStatus = async () => {
 // Device memory info
 export const getDeviceMemory = async () => {
   try {
+<<<<<<< HEAD
     const totalMemory = await Device.getTotalMemoryAsync();
     return {
       totalMemory,
@@ -51,6 +56,30 @@ export const getDeviceMemory = async () => {
   } catch (error) {
     console.error('Error getting device memory:', error);
     return { totalMemory: null, lowMemoryDevice: false };
+=======
+    // Check if getTotalMemoryAsync is available
+    if (Device.getTotalMemoryAsync && typeof Device.getTotalMemoryAsync === 'function') {
+      const totalMemory = await Device.getTotalMemoryAsync();
+      return {
+        totalMemory,
+        lowMemoryDevice: totalMemory < 2 * 1024 * 1024 * 1024, // Less than 2GB
+      };
+    } else {
+      // Fallback: estimate based on device type
+      const deviceType = await Device.getDeviceTypeAsync();
+      // Assume older/tablet devices might have less memory
+      const lowMemoryDevice = deviceType === Device.DeviceType.TABLET || deviceType < 2;
+      return {
+        totalMemory: null,
+        lowMemoryDevice,
+        estimated: true
+      };
+    }
+  } catch (error) {
+    console.error('Error getting device memory:', error);
+    // Fallback: assume not low memory device
+    return { totalMemory: null, lowMemoryDevice: false, error: true };
+>>>>>>> master
   }
 };
 
@@ -58,6 +87,7 @@ export const getDeviceMemory = async () => {
 export const getOptimalVideoQuality = async () => {
   const { lowMemoryDevice } = await getDeviceMemory();
   const { isWifi, is4G, is5G } = await getNetworkStatus();
+<<<<<<< HEAD
   
   if (lowMemoryDevice) {
     return 'low'; // 480p
@@ -72,6 +102,52 @@ export const getOptimalVideoQuality = async () => {
   }
   
   return 'low'; // Default to low quality
+=======
+
+  if (lowMemoryDevice) {
+    return VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '360p');
+  }
+
+  if (isWifi || is5G) {
+    return VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '1080p') ||
+           VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '720p');
+  }
+
+  if (is4G) {
+    return VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '720p') ||
+           VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '480p');
+  }
+
+  return VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '360p'); // Default to low quality
+};
+
+// Dynamic quality selection during playback
+export const selectAdaptiveQuality = async (currentQuality, playbackStats) => {
+  const { isWifi, is4G, is5G } = await getNetworkStatus();
+  const { lowMemoryDevice } = await getDeviceMemory();
+
+  if (lowMemoryDevice) {
+    return VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === '360p');
+  }
+
+  // If buffering frequently, drop quality
+  if (playbackStats.bufferingEvents > 3) {
+    const currentIndex = VIDEO_CONFIG.adaptiveBitrate.qualities.findIndex(q => q.resolution === currentQuality.resolution);
+    if (currentIndex > 0) {
+      return VIDEO_CONFIG.adaptiveBitrate.qualities[currentIndex - 1];
+    }
+  }
+
+  // If playback is smooth and network is good, increase quality
+  if (playbackStats.bufferingEvents === 0 && (isWifi || is5G)) {
+    const currentIndex = VIDEO_CONFIG.adaptiveBitrate.qualities.findIndex(q => q.resolution === currentQuality.resolution);
+    if (currentIndex < VIDEO_CONFIG.adaptiveBitrate.qualities.length - 1) {
+      return VIDEO_CONFIG.adaptiveBitrate.qualities[currentIndex + 1];
+    }
+  }
+
+  return currentQuality; // Keep current quality
+>>>>>>> master
 };
 
 // Font scaling
@@ -129,9 +205,24 @@ export const getOptimalGridColumns = async () => {
 // Performance monitoring
 export const getPerformanceMetrics = async () => {
   try {
+<<<<<<< HEAD
     const memory = await Device.getMemoryAsync();
     const battery = await Device.getBatteryLevelAsync();
     
+=======
+    let memory = null;
+    let battery = null;
+
+    // Check if methods are available
+    if (Device.getMemoryAsync && typeof Device.getMemoryAsync === 'function') {
+      memory = await Device.getMemoryAsync();
+    }
+
+    if (Device.getBatteryLevelAsync && typeof Device.getBatteryLevelAsync === 'function') {
+      battery = await Device.getBatteryLevelAsync();
+    }
+
+>>>>>>> master
     return {
       memory,
       battery,
@@ -142,3 +233,47 @@ export const getPerformanceMetrics = async () => {
     return null;
   }
 };
+<<<<<<< HEAD
+=======
+
+// Memory optimization for video playback
+export const getMemoryOptimizedVideoConfig = async () => {
+  const { lowMemoryDevice } = await getDeviceMemory();
+  const { isWifi, is4G, is5G } = await getNetworkStatus();
+
+  if (lowMemoryDevice) {
+    return {
+      maxBufferMs: 3000, // Very conservative for low memory devices
+      minBufferMs: 2000, // Must be >= bufferForPlaybackAfterRebufferMs
+      bufferForPlaybackMs: 1000,
+      bufferForPlaybackAfterRebufferMs: 1500,
+      backBufferDurationMs: 1000,
+      maxBitRate: 1000000, // Limit bitrate for low memory
+      resolution: 360 // Force lowest resolution
+    };
+  }
+
+  if (is4G) {
+    return {
+      maxBufferMs: 4000,
+      minBufferMs: 2500, // Must be >= bufferForPlaybackAfterRebufferMs
+      bufferForPlaybackMs: 1500,
+      bufferForPlaybackAfterRebufferMs: 2000,
+      backBufferDurationMs: 2000,
+      maxBitRate: 1500000,
+      resolution: 480
+    };
+  }
+
+  // WiFi or 5G - can be more aggressive but still conservative
+  return {
+    maxBufferMs: 5000,
+    minBufferMs: 3000, // Must be >= bufferForPlaybackAfterRebufferMs
+    bufferForPlaybackMs: 1500,
+    bufferForPlaybackAfterRebufferMs: 2500,
+    backBufferDurationMs: 2000,
+    maxBitRate: 2500000,
+    resolution: 720
+  };
+};
+>>>>>>> master

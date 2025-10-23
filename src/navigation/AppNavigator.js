@@ -1,7 +1,12 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+<<<<<<< HEAD
 import { useAuth } from '../context/AuthContext';
+=======
+import { ActivityIndicator } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
+>>>>>>> master
 import MainTabNavigator from './MainTabNavigator';
 import AuthNavigator from './AuthNavigator';
 import { theme } from '../config/theme';

@@ -2,16 +2,28 @@ export const theme = {
   colors: {
     background: '#000000',
     backgroundDark: '#1A1A1A',
+<<<<<<< HEAD
+=======
+    surface: '#1A1A1A',
+>>>>>>> master
     primary: '#FF4D67',
     secondary: '#FF8700',
     text: '#FFFFFF',
     textSecondary: 'rgba(255, 255, 255, 0.7)',
+<<<<<<< HEAD
+=======
+    border: 'rgba(255, 255, 255, 0.2)',
+>>>>>>> master
     error: '#FF3B30',
     success: '#34C759',
     warning: '#FFCC00',
     recording: '#FF2D55',
     overlay: 'rgba(0,0,0,0.5)',
+<<<<<<< HEAD
     placeholder: '#FFFFFF',
+=======
+    placeholder: 'rgba(255, 255, 255, 0.5)',
+>>>>>>> master
   },
   spacing: {
     xs: 4,

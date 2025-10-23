@@ -211,6 +211,7 @@ const RegisterScreen = ({ navigation }) => {
       });
 
       if (response.success && response.requireOTP) {
+<<<<<<< HEAD
         navigation.navigate('OTPVerification', {
           email: email.trim().toLowerCase(),
           type: 'signup',
@@ -218,6 +219,25 @@ const RegisterScreen = ({ navigation }) => {
           username: username.trim(),
           password: password
         });
+=======
+        // Show success message before navigating to OTP
+        Alert.alert(
+          'Registration Started',
+          'Please check your email for the verification code.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('OTPVerification', {
+                email: email.trim().toLowerCase(),
+                type: 'signup',
+                message: 'Enter the OTP sent to your email to complete registration',
+                username: username.trim(),
+                password: password
+              })
+            }
+          ]
+        );
+>>>>>>> master
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -284,7 +304,11 @@ const RegisterScreen = ({ navigation }) => {
               <FontAwesome name="check-circle" size={50} color="#fff" />
             </View>
             <Text style={styles.successText}>Registration Successful!</Text>
+<<<<<<< HEAD
             <Text style={styles.successSubText}>Welcome to TikTok India</Text>
+=======
+            <Text style={styles.successSubText}>Welcome to TicToc India</Text>
+>>>>>>> master
             <TouchableOpacity
               style={styles.redirectButton}
               onPress={() => {
@@ -308,7 +332,11 @@ const RegisterScreen = ({ navigation }) => {
         <Animated.View style={[styles.content, animatedStyle]}>
           <View style={styles.header}>
             <Text style={styles.title}>Create Account</Text>
+<<<<<<< HEAD
             <Text style={styles.subtitle}>Join the TikTok community</Text>
+=======
+            <Text style={styles.subtitle}>Join the TicToc community</Text>
+>>>>>>> master
           </View>
 
           <View style={styles.form}>

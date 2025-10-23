@@ -1,9 +1,17 @@
 export default {
+<<<<<<< HEAD
   name: 'TikTok India',
   slug: 'tiktok-india',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/3.png',
+=======
+  name: 'TicToc India',
+  slug: 'TicToc-india',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/icon.png',
+>>>>>>> master
   userInterfaceStyle: 'light',
   splash: {
     image: './assets/splash.png',
@@ -13,9 +21,16 @@ export default {
   assetBundlePatterns: [
     '**/*'
   ],
+<<<<<<< HEAD
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.gggroup.tiktokindia',
+=======
+  scheme: 'TicTocindia',
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: 'com.gggroup.TicTocindia',
+>>>>>>> master
     buildNumber: '1',
     deploymentTarget: '13.4',
     infoPlist: {
@@ -33,11 +48,19 @@ export default {
   },
   android: {
     adaptiveIcon: {
+<<<<<<< HEAD
       foregroundImage: './assets/3.png',
       backgroundColor: '#ffffff'
     },
     package: 'com.gggroup.tiktokindia',
     versionCode: 1,
+=======
+      foregroundImage: './assets/icon.png',
+      backgroundColor: '#ffffff'
+    },
+    package: 'com.gggroup.TicTocindia',
+    versionCode: 2,
+>>>>>>> master
     permissions: [
       'INTERNET',
       'READ_EXTERNAL_STORAGE',
@@ -45,7 +68,14 @@ export default {
       'CAMERA',
       'RECORD_AUDIO',
       'SYSTEM_ALERT_WINDOW',
+<<<<<<< HEAD
       'VIBRATE'
+=======
+      'VIBRATE',
+      'POST_NOTIFICATIONS',
+      'RECEIVE_BOOT_COMPLETED',
+      'WAKE_LOCK'
+>>>>>>> master
     ],
     hardwareAccelerated: true,
     largeHeap: true
@@ -59,12 +89,17 @@ export default {
     }
   },
   cli: {
+<<<<<<< HEAD
     version: '>= 5.9.1',
     appVersionSource: 'remote'
+=======
+    version: '>= 5.9.1'
+>>>>>>> master
   },
   developmentClient: {
     silentLaunch: true
   },
+<<<<<<< HEAD
   updates: {
     url: 'https://u.expo.dev/b38d34e5-6ee4-4306-91dd-b45887c7b47e'
   },
@@ -73,6 +108,11 @@ export default {
   },
   plugins: [
     'expo-router',
+=======
+  plugins: [
+    'expo-router',
+    'expo-font',
+>>>>>>> master
     [
       'expo-build-properties',
       {
@@ -107,6 +147,24 @@ export default {
       {
         enableAndroidPackage: true
       }
+<<<<<<< HEAD
+=======
+    ],
+    [
+      '@react-native-firebase/app',
+      {
+        android: {
+          googleServicesFile: './google-services.json'
+        },
+        ios: {
+          googleServicesFile: './GoogleService-Info.plist'
+        }
+      }
+    ],
+    [
+      '@react-native-firebase/messaging',
+      {}
+>>>>>>> master
     ]
   ]
 }; 

@@ -2,6 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/authService';
 import socketService from '../services/socketService';
+<<<<<<< HEAD
+=======
+import firebaseMessagingService from '../services/firebaseMessagingService';
+>>>>>>> master
 
 const AuthContext = createContext(null);
 
@@ -19,13 +23,26 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await authService.getCurrentUser();
       const storedToken = await authService.getToken();
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> master
       if (storedToken && userData) {
         setUser(userData);
         setToken(storedToken);
         setIsAuthenticated(true);
         // Initialize socket connection for authenticated user
         socketService.connect();
+<<<<<<< HEAD
+=======
+
+        // Initialize Firebase messaging for authenticated user (non-blocking)
+        firebaseMessagingService.initialize(userData._id)
+          .catch(firebaseError => {
+            console.warn('Firebase messaging initialization failed:', firebaseError.message);
+          });
+>>>>>>> master
       }
     } catch (error) {
       console.error('Error loading stored user:', error);
@@ -42,6 +59,16 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       // Initialize socket connection after login
       socketService.connect();
+<<<<<<< HEAD
+=======
+
+      // Initialize Firebase messaging after login (non-blocking)
+      firebaseMessagingService.initialize(userData._id)
+        .catch(firebaseError => {
+          console.warn('Firebase messaging initialization failed:', firebaseError.message);
+        });
+
+>>>>>>> master
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
@@ -73,6 +100,11 @@ export const AuthProvider = ({ children }) => {
       await authService.logout();
       // Disconnect socket on logout
       socketService.disconnect();
+<<<<<<< HEAD
+=======
+      // Clean up Firebase messaging on logout
+      firebaseMessagingService.cleanup();
+>>>>>>> master
       setUser(null);
       setToken(null);
       setIsAuthenticated(false);
@@ -100,6 +132,68 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const updateAuth = async () => {
+    try {
+      const userData = await authService.getCurrentUser();
+      const storedToken = await authService.getToken();
+
+      if (storedToken && userData) {
+        setUser(userData);
+        setToken(storedToken);
+        setIsAuthenticated(true);
+        // Initialize socket connection for authenticated user
+        socketService.connect();
+
+        // Initialize Firebase messaging for authenticated user (non-blocking)
+        firebaseMessagingService.initialize(userData._id)
+          .catch(firebaseError => {
+            console.warn('Firebase messaging initialization failed:', firebaseError.message);
+          });
+      } else {
+        setUser(null);
+        setToken(null);
+        setIsAuthenticated(false);
+        socketService.disconnect();
+        firebaseMessagingService.cleanup();
+      }
+    } catch (error) {
+      console.error('Error updating auth:', error);
+      setUser(null);
+      setToken(null);
+      setIsAuthenticated(false);
+      socketService.disconnect();
+      firebaseMessagingService.cleanup();
+    }
+  };
+
+  // Handle authentication errors (401 responses)
+  const handleAuthError = async () => {
+    console.log('Authentication error detected, logging out user');
+    try {
+      // Clear all auth data
+      await authService.logout();
+      socketService.disconnect();
+      firebaseMessagingService.cleanup();
+      
+      // Reset auth state
+      setUser(null);
+      setToken(null);
+      setIsAuthenticated(false);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error handling auth error:', error);
+      // Force reset state even if logout fails
+      setUser(null);
+      setToken(null);
+      setIsAuthenticated(false);
+      return { success: false, error: error.message };
+    }
+  };
+
+>>>>>>> master
   const value = {
     user,
     token,
@@ -109,6 +203,11 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
+<<<<<<< HEAD
+=======
+    updateAuth,
+    handleAuthError,
+>>>>>>> master
   };
 
   if (loading) {

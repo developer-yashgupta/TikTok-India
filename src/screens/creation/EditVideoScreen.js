@@ -29,7 +29,11 @@ import { videoService } from '../../services/videoService';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const EditVideoScreen = ({ route, navigation }) => {
+<<<<<<< HEAD
   const { videoUri, videoFile, fileSize } = route.params;
+=======
+  const { videoUri, videoFile, fileSize, videoId, video: existingVideo, isEditing } = route.params;
+>>>>>>> master
   const { user } = useAuth();
   const [description, setDescription] = useState('');
   const [hashtags, setHashtags] = useState([]);
@@ -46,7 +50,18 @@ const EditVideoScreen = ({ route, navigation }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
+<<<<<<< HEAD
     loadVideoMetadata();
+=======
+    if (isEditing && existingVideo) {
+      // Load existing video data for editing
+      loadExistingVideoData();
+    } else {
+      // Load video metadata for new video
+      loadVideoMetadata();
+    }
+    
+>>>>>>> master
     return () => {
       // Cleanup video URL on unmount
       if (Platform.OS === 'web') {
@@ -58,7 +73,21 @@ const EditVideoScreen = ({ route, navigation }) => {
         }
       }
     };
+<<<<<<< HEAD
   }, [videoUri]);
+=======
+  }, [videoUri, isEditing, existingVideo]);
+
+  const loadExistingVideoData = () => {
+    if (existingVideo) {
+      setDescription(existingVideo.description || '');
+      setHashtags(existingVideo.hashtags || []);
+      setIsPrivate(existingVideo.visibility === 'private');
+      setVideoDuration(existingVideo.duration || 0);
+      setVideoDimensions(existingVideo.dimensions || null);
+    }
+  };
+>>>>>>> master
 
   const loadVideoMetadata = async () => {
     try {
@@ -143,6 +172,67 @@ const EditVideoScreen = ({ route, navigation }) => {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const handleUpdateVideo = async () => {
+    try {
+      setError(null);
+
+      // Validate description
+      const descValidation = validateDescription(description);
+      if (!descValidation.isValid) {
+        throw new Error(descValidation.message);
+      }
+
+      // Validate hashtags
+      const hashtagValidation = validateHashtags(hashtags);
+      if (!hashtagValidation.isValid) {
+        throw new Error(hashtagValidation.message);
+      }
+
+      setLoading(true);
+
+      // Prepare update data
+      const updateData = {
+        description: description || '',
+        isPrivate: isPrivate || false
+      };
+
+      console.log('Updating video with data:', updateData);
+
+      // Update existing video
+      const result = await videoService.updateVideo(videoId, updateData);
+
+      console.log('Video update completed successfully:', result);
+
+      // Show success message
+      Alert.alert(
+        'Success! 🎉',
+        'Your video has been updated successfully.',
+        [
+          {
+            text: 'Continue',
+            onPress: () => {
+              navigation.goBack();
+            },
+            style: 'default',
+          },
+        ]
+      );
+
+    } catch (error) {
+      console.error('Error updating video:', error);
+      setError(error.message);
+      Alert.alert(
+        'Update Failed',
+        error.message || 'Failed to update video. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+>>>>>>> master
   const handlePost = async () => {
     try {
       setError(null);
@@ -362,10 +452,19 @@ const EditVideoScreen = ({ route, navigation }) => {
       >
         <Feather name="x" size={24} color="#fff" />
       </TouchableOpacity>
+<<<<<<< HEAD
       <Text style={styles.headerTitle}>Edit Video</Text>
       <TouchableOpacity
         style={styles.headerButton}
         onPress={handlePost}
+=======
+      <Text style={styles.headerTitle}>
+        {isEditing && existingVideo ? 'Edit Video' : 'Edit Video'}
+      </Text>
+      <TouchableOpacity
+        style={styles.headerButton}
+        onPress={isEditing && existingVideo ? handleUpdateVideo : handlePost}
+>>>>>>> master
         disabled={loading}
       >
         <Feather name="check" size={24} color="#fff" />
@@ -402,11 +501,21 @@ const EditVideoScreen = ({ route, navigation }) => {
         >
           <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.loadingText}>
+<<<<<<< HEAD
             Uploading video... {uploadProgress}%
           </Text>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${uploadProgress}%` }]} />
           </View>
+=======
+            {isEditing && existingVideo ? 'Updating video...' : `Uploading video... ${uploadProgress}%`}
+          </Text>
+          {!isEditing && (
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${uploadProgress}%` }]} />
+            </View>
+          )}
+>>>>>>> master
         </LinearGradient>
       </View>
     );
@@ -428,6 +537,7 @@ const EditVideoScreen = ({ route, navigation }) => {
         scrollEventThrottle={16}
       >
         <View style={styles.previewContainer}>
+<<<<<<< HEAD
           {Platform.OS === 'web' ? (
             <video
               ref={videoRef}
@@ -460,6 +570,77 @@ const EditVideoScreen = ({ route, navigation }) => {
               onLoad={() => console.log('Video loaded successfully')}
               onError={(error) => console.error('Video loading error:', error)}
             />
+=======
+          {isEditing && existingVideo ? (
+            // Show existing video for editing
+            Platform.OS === 'web' ? (
+              <video
+                ref={videoRef}
+                src={existingVideo.videoUrl}
+                style={styles.videoPreview}
+                controls
+                playsInline
+                autoPlay={false}
+                muted
+                poster={existingVideo.thumbnailUrl}
+                onLoadedData={() => console.log('Web video loaded successfully')}
+                onError={(error) => console.error('Web video loading error:', error)}
+              />
+            ) : (
+              <Video
+                ref={videoRef}
+                source={{ uri: existingVideo.videoUrl }}
+                style={styles.videoPreview}
+                resizeMode="contain"
+                repeat={true}
+                useNativeControls={true}
+                paused={true}
+                controls={true}
+                poster={existingVideo.thumbnailUrl}
+                // Using modern buffer configuration
+                minBufferMs={15000}
+                maxBufferMs={50000}
+                bufferForPlaybackMs={2500}
+                bufferForPlaybackAfterRebufferMs={5000}
+                onLoad={() => console.log('Video loaded successfully')}
+                onError={(error) => console.error('Video loading error:', error)}
+              />
+            )
+          ) : (
+            // Show new video for upload
+            Platform.OS === 'web' ? (
+              <video
+                ref={videoRef}
+                src={videoUri}
+                style={styles.videoPreview}
+                controls
+                playsInline
+                autoPlay={false}
+                muted
+                poster={videoUri}
+                onLoadedData={() => console.log('Web video loaded successfully')}
+                onError={(error) => console.error('Web video loading error:', error)}
+              />
+            ) : (
+                              <Video
+                  ref={videoRef}
+                  source={{ uri: videoUri }}
+                  style={styles.videoPreview}
+                  resizeMode="contain"
+                  repeat={true}
+                  useNativeControls={true}
+                  paused={true}
+                  poster={videoUri}
+                // Using modern buffer configuration
+                minBufferMs={15000}
+                maxBufferMs={50000}
+                bufferForPlaybackMs={2500}
+                bufferForPlaybackAfterRebufferMs={5000}
+                onLoad={() => console.log('Video loaded successfully')}
+                onError={(error) => console.error('Video loading error:', error)}
+              />
+            )
+>>>>>>> master
           )}
         </View>
 

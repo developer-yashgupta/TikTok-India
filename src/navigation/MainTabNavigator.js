@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
+=======
+import React, { useState, useEffect } from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+>>>>>>> master
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { createStackNavigator } from '@react-navigation/stack';
 import FeedScreen from '../screens/main/FeedScreen';
@@ -17,7 +23,15 @@ import FollowingScreen from '../screens/profile/FollowingScreen';
 import ChatScreen from '../screens/messaging/ChatScreen';
 import ChatListScreen from '../screens/messaging/ChatListScreen';
 import DirectMessagingScreen from '../screens/messaging/DirectMessagingScreen';
+<<<<<<< HEAD
 import { theme } from '../config/theme';
+=======
+import NotificationBadge from '../components/shared/NotificationBadge';
+import { theme } from '../config/theme';
+import { notificationService } from '../services/notificationService';
+import socketService from '../services/socketService';
+import { useAuth } from '../contexts/AuthContext';
+>>>>>>> master
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -87,6 +101,91 @@ const HomeNavigator = () => {
 };
 
 const MainTabNavigator = () => {
+<<<<<<< HEAD
+=======
+  const { user } = useAuth();
+  
+  // 🔔 Badge state management
+  const [badgeState, setBadgeState] = useState({
+    chatCount: 0,
+    inboxHasUnread: false,
+  });
+
+  // Subscribe to badge updates and setup real-time listeners
+  useEffect(() => {
+    console.log('🔔 MainTabNavigator: Setting up badge management and real-time updates');
+    
+    // Subscribe to badge updates from notification service
+    const unsubscribe = notificationService.subscribeToBadgeUpdates((newBadgeState) => {
+      console.log('🔔 Badge state updated in MainTabNavigator:', newBadgeState);
+      setBadgeState({
+        chatCount: newBadgeState.chatCount || 0,
+        inboxHasUnread: newBadgeState.inboxHasUnread || false,
+      });
+    });
+
+    // Initial sync with server
+    notificationService.syncBadgesWithServer();
+
+    // Setup socket listeners for real-time badge updates
+    const setupRealtimeBadgeListeners = async () => {
+      try {
+        const connected = await socketService.connect();
+        if (connected && user) {
+          console.log('✅ Socket connected for MainTabNavigator badge updates');
+          
+          // Clean up existing listeners
+          socketService.removeAllListeners('global_new_message_badge');
+          socketService.removeAllListeners('global_messages_read_badge');
+          socketService.removeAllListeners('new_message_notification');
+          
+          // Listen for new messages globally (for badge updates)
+          socketService.onGlobalNewMessage((data) => {
+            console.log('🔔 MainTab: Global new message for badge:', data);
+            if (data.success && data.data && data.data.senderId !== user._id) {
+              // Only increment badge if message is from someone else
+              notificationService.handleRealTimeMessage({
+                ...data.data,
+                currentUserId: user._id
+              });
+            }
+          });
+          
+          // Listen for messages being read globally (for badge updates)
+          socketService.onGlobalMessagesRead((data) => {
+            console.log('🔔 MainTab: Global messages read for badge:', data);
+            // When messages are read, potentially decrement badge
+            notificationService.handleRealTimeMessageRead(data);
+          });
+          
+          // Listen for new message notifications specifically for badges
+          socketService.onNewMessageNotification((data) => {
+            console.log('🔔 MainTab: New message notification for badge:', data);
+            if (data.senderId !== user._id) {
+              notificationService.updateChatCount(1);
+            }
+          });
+          
+          console.log('✅ MainTabNavigator: Real-time badge listeners setup complete');
+        }
+      } catch (error) {
+        console.error('❌ Error setting up real-time badge listeners:', error);
+      }
+    };
+    
+    setupRealtimeBadgeListeners();
+
+    // Cleanup function
+    return () => {
+      console.log('🔔 MainTabNavigator: Cleaning up badge listeners');
+      unsubscribe();
+      socketService.removeAllListeners('global_new_message_badge');
+      socketService.removeAllListeners('global_messages_read_badge');
+      socketService.removeAllListeners('new_message_notification');
+    };
+  }, [user]);
+
+>>>>>>> master
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -99,7 +198,24 @@ const MainTabNavigator = () => {
             case 'Home':
               iconName = 'home';
               IconComponent = MaterialIcons;
+<<<<<<< HEAD
               break;
+=======
+              
+              // 🔔 Show chat count badge on Home tab (where ChatList is accessible)
+              return (
+                <View style={styles.iconContainer}>
+                  <IconComponent
+                    name={iconName}
+                    size={size}
+                    color={focused ? theme.colors.primary : theme.colors.text}
+                    style={{ opacity: focused ? 1 : 0.8 }}
+                  />
+                  <NotificationBadge count={badgeState.chatCount} />
+                </View>
+              );
+              
+>>>>>>> master
             case 'Discover':
               iconName = focused ? 'search' : 'search';
               IconComponent = MaterialIcons;
@@ -116,7 +232,24 @@ const MainTabNavigator = () => {
             case 'Inbox':
               iconName = focused ? 'mail' : 'mail-outline';
               IconComponent = MaterialIcons;
+<<<<<<< HEAD
               break;
+=======
+              
+              // 🔔 Show unread indicator on Inbox tab (for likes, comments, follows, etc.)
+              return (
+                <View style={styles.iconContainer}>
+                  <IconComponent
+                    name={iconName}
+                    size={size}
+                    color={focused ? theme.colors.primary : theme.colors.text}
+                    style={{ opacity: focused ? 1 : 0.8 }}
+                  />
+                  <NotificationBadge showDot={badgeState.inboxHasUnread} />
+                </View>
+              );
+              
+>>>>>>> master
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
               IconComponent = MaterialIcons;
@@ -195,6 +328,14 @@ const styles = StyleSheet.create({
     borderTopColor: '#00F2EA',
     borderBottomColor: '#FF0050',
   },
+<<<<<<< HEAD
+=======
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+>>>>>>> master
 });
 
 export default MainTabNavigator;

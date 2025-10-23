@@ -18,6 +18,10 @@ import { messageService } from '../../services/messageService';
 import { formatChatTime } from '../../utils/dateUtils';
 import { useAuth } from '../../contexts/AuthContext';
 import socketService from '../../services/socketService';
+<<<<<<< HEAD
+=======
+import { notificationService } from '../../services/notificationService';
+>>>>>>> master
 
 const ChatListScreen = () => {
   const navigation = useNavigation();
@@ -40,7 +44,10 @@ const ChatListScreen = () => {
         setFilteredChats(chatData);
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error loading chats:', error);
+=======
+>>>>>>> master
       Alert.alert('Error', `Failed to load chats: ${error.response?.data?.msg || error.message}`);
     } finally {
       setLoading(false);
@@ -52,6 +59,7 @@ const ChatListScreen = () => {
     useCallback(() => {
       loadChats();
 
+<<<<<<< HEAD
       // Setup socket listeners for real-time updates
       const handleNewMessageNotification = (data) => {
         // Refresh chat list to update last message and unread count
@@ -62,15 +70,202 @@ const ChatListScreen = () => {
 
       return () => {
         socketService.removeListener('new_message_notification', handleNewMessageNotification);
+=======
+      // 🔔 Clear chat count badge when user visits chat list
+      notificationService.clearChatCount();
+
+      // Initialize socket connection if not already connected
+      const initializeSocket = async () => {
+        try {
+          const connected = await socketService.connect();
+          if (connected) {
+            setupSocketListeners();
+          }
+        } catch (error) {
+          // Socket initialization error
+        }
+      };
+
+      // Setup comprehensive socket listeners for real-time chat updates
+      const setupSocketListeners = () => {
+        
+        // Clean up existing listeners first
+        socketService.removeAllListeners('new_message_notification');
+        socketService.removeAllListeners('global_new_message');
+        socketService.removeAllListeners('global_messages_read');
+        socketService.removeAllListeners('chat_list_update');
+        socketService.removeAllListeners('unread_count_update');
+
+        // Listen for new message notifications (for any chat)
+        socketService.onNewMessageNotification((data) => {
+          // Refresh chat list to show new message and update order
+          loadChats(false);
+          // Update notification badges
+          notificationService.updateChatCount(1);
+        });
+
+        // Listen for global new messages (real-time chat list updates)
+        socketService.onGlobalNewMessage((data) => {
+          if (data.success && data.data) {
+            // Update the specific chat in the list
+            updateChatInList(data.data);
+          }
+        });
+
+        // Listen for global messages read events (update read receipts)
+        socketService.onGlobalMessagesRead((data) => {
+          if (data.chatId) {
+            // Update read status for messages in this chat
+            updateChatReadStatus(data.chatId);
+          }
+        });
+
+        // Listen for chat list updates
+        socketService.onChatListUpdate((data) => {
+          loadChats(false);
+        });
+
+        // Listen for unread count updates
+        socketService.onUnreadCountUpdate((data) => {
+          if (data.chatId && typeof data.unreadCount !== 'undefined') {
+            updateChatUnreadCount(data.chatId, data.unreadCount);
+          }
+        });
+
+      };
+
+      initializeSocket();
+
+      // Cleanup function
+      return () => {
+        socketService.removeAllListeners('new_message_notification');
+        socketService.removeAllListeners('global_new_message');
+        socketService.removeAllListeners('global_messages_read');
+        socketService.removeAllListeners('chat_list_update');
+        socketService.removeAllListeners('unread_count_update');
+>>>>>>> master
       };
     }, [])
   );
 
+<<<<<<< HEAD
+=======
+  // Keep filtered chats in sync with main chats array for real-time updates
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredChats(chats);
+    } else {
+      // Re-apply current search filter to updated chats
+      const filtered = chats.filter(chat =>
+        chat.otherUser.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        chat.otherUser.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (chat.lastMessage?.content || chat.lastMessage).toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredChats(filtered);
+    }
+  }, [chats, searchQuery]);
+
+>>>>>>> master
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadChats(false);
   }, []);
 
+<<<<<<< HEAD
+=======
+  // Helper functions for real-time updates
+  const updateChatInList = useCallback((newMessageData) => {
+    
+    setChats(prevChats => {
+      // Find existing chat or create new one
+      const existingChatIndex = prevChats.findIndex(chat => 
+        chat.chatId === newMessageData.chatId
+      );
+      
+      let updatedChats;
+      
+      if (existingChatIndex >= 0) {
+        // Update existing chat
+        updatedChats = [...prevChats];
+        const existingChat = updatedChats[existingChatIndex];
+        
+        // Update chat with new message data
+        updatedChats[existingChatIndex] = {
+          ...existingChat,
+          lastMessage: {
+            content: newMessageData.content,
+            isFromCurrentUser: newMessageData.senderId === user?._id,
+            read: newMessageData.read || false
+          },
+          timestamp: newMessageData.timestamp || newMessageData.createdAt,
+          unreadCount: newMessageData.senderId === user?._id ? 
+            existingChat.unreadCount : (existingChat.unreadCount || 0) + 1
+        };
+        
+        // Move updated chat to top
+        const updatedChat = updatedChats.splice(existingChatIndex, 1)[0];
+        updatedChats.unshift(updatedChat);
+      } else {
+        // Create new chat entry
+        const newChat = {
+          chatId: newMessageData.chatId,
+          otherUser: newMessageData.otherUser || {
+            _id: newMessageData.senderId === user?._id ? 
+              newMessageData.recipientId : newMessageData.senderId,
+            username: newMessageData.senderUsername || 'Unknown User',
+            displayName: newMessageData.senderDisplayName,
+            avatar: newMessageData.senderAvatar
+          },
+          lastMessage: {
+            content: newMessageData.content,
+            isFromCurrentUser: newMessageData.senderId === user?._id,
+            read: newMessageData.read || false
+          },
+          timestamp: newMessageData.timestamp || newMessageData.createdAt,
+          unreadCount: newMessageData.senderId === user?._id ? 0 : 1
+        };
+        
+        updatedChats = [newChat, ...prevChats];
+      }
+      
+      return updatedChats;
+    });
+  }, [user]);
+  
+  const updateChatReadStatus = useCallback((chatId) => {
+    
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        if (chat.chatId === chatId) {
+          return {
+            ...chat,
+            lastMessage: {
+              ...chat.lastMessage,
+              read: true
+            }
+          };
+        }
+        return chat;
+      })
+    );
+  }, []);
+  
+  const updateChatUnreadCount = useCallback((chatId, newUnreadCount) => {
+    
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        if (chat.chatId === chatId) {
+          return {
+            ...chat,
+            unreadCount: newUnreadCount
+          };
+        }
+        return chat;
+      })
+    );
+  }, []);
+
+>>>>>>> master
   // Search functionality
   const handleSearch = useCallback((query) => {
     setSearchQuery(query);
@@ -80,7 +275,11 @@ const ChatListScreen = () => {
       const filtered = chats.filter(chat =>
         chat.otherUser.username.toLowerCase().includes(query.toLowerCase()) ||
         chat.otherUser.displayName?.toLowerCase().includes(query.toLowerCase()) ||
+<<<<<<< HEAD
         chat.lastMessage.toLowerCase().includes(query.toLowerCase())
+=======
+        (chat.lastMessage?.content || chat.lastMessage).toLowerCase().includes(query.toLowerCase())
+>>>>>>> master
       );
       setFilteredChats(filtered);
     }
@@ -139,7 +338,11 @@ const ChatListScreen = () => {
               <MaterialIcons
                 name={item.lastMessage.read ? "done-all" : "done"}
                 size={16}
+<<<<<<< HEAD
                 color={item.lastMessage.read ? theme.colors.primary : theme.colors.textSecondary}
+=======
+                color={item.lastMessage.read ? "#4FC3F7" : theme.colors.textSecondary}
+>>>>>>> master
                 style={styles.readIcon}
               />
             )}

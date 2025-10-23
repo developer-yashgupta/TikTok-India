@@ -1,6 +1,7 @@
 import api from '../config/api';
 
 export const messageService = {
+<<<<<<< HEAD
   // Get chat list
   getChats: async () => {
     const response = await api.get('/messages/chats');
@@ -11,15 +12,93 @@ export const messageService = {
   getMessages: async (chatId, page = 1, limit = 50) => {
     const response = await api.get(`/messages/${chatId}`, {
       params: { page, limit }
+=======
+  // Get chat list with pagination support
+  getChats: async (options = {}) => {
+    const {
+      page = 1,
+      limit = 50, // Show more chats by default
+      search = ''
+    } = options;
+
+    const params = {
+      page,
+      limit
+    };
+
+    if (search) {
+      params.search = search;
+    }
+
+    const response = await api.get('/messages/chats', { params });
+    return response.data;
+  },
+
+  // Get recent chats only (for initial load)
+  getRecentChats: async (limit = 20) => {
+    const response = await api.get('/messages/chats/recent', {
+      params: { limit }
+    });
+    return response.data;
+  },
+
+  // Get messages for a specific chat with pagination
+  getMessages: async (chatId, options = {}) => {
+    const {
+      page = 1,
+      limit = 30, // Reduced default limit for better performance
+      before, // Cursor for loading older messages
+      after,  // Cursor for loading newer messages
+      sort = 'desc' // 'desc' for recent first, 'asc' for chronological
+    } = options;
+
+    const params = {
+      page,
+      limit,
+      sort
+    };
+
+    // Add cursor parameters if provided
+    if (before) params.before = before;
+    if (after) params.after = after;
+
+    const response = await api.get(`/messages/${chatId}`, { params });
+    return response.data;
+  },
+
+  // Get recent messages only (for initial load)
+  getRecentMessages: async (chatId, limit = 20) => {
+    const response = await api.get(`/messages/${chatId}/recent`, {
+      params: { limit }
+    });
+    return response.data;
+  },
+
+  // Get older messages (for pagination)
+  getOlderMessages: async (chatId, beforeMessageId, limit = 20) => {
+    const response = await api.get(`/messages/${chatId}`, {
+      params: {
+        before: beforeMessageId,
+        limit,
+        sort: 'desc'
+      }
+>>>>>>> master
     });
     return response.data;
   },
 
   // Send a message
+<<<<<<< HEAD
   sendMessage: async (chatId, content) => {
     const response = await api.post(`/messages/${chatId}`, {
       content
     });
+=======
+  sendMessage: async (chatId, content, replyTo) => {
+    const body = { content };
+    if (replyTo) body.replyTo = replyTo;
+    const response = await api.post(`/messages/${chatId}`, body);
+>>>>>>> master
     return response.data;
   },
 

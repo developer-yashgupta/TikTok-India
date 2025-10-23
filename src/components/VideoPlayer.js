@@ -15,6 +15,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { TapGestureHandler, State } from 'react-native-gesture-handler';
+<<<<<<< HEAD
+=======
+import { AppState, DeviceEventEmitter } from 'react-native';
+import { getOptimalVideoQuality, getMemoryOptimizedVideoConfig } from '../utils/deviceUtils';
+import videoPreloader from '../utils/videoPreloader';
+import videoCache from '../utils/videoCache';
+import { VIDEO_CONFIG } from '../config/videoConfig';
+import performanceMonitor from '../utils/performanceMonitor';
+import VideoSkeleton from './VideoSkeleton';
+>>>>>>> master
 
 // Get screen dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -46,6 +56,27 @@ const { width: VIDEO_WIDTH, height: VIDEO_HEIGHT } = getVideoDimensions();
 
 // Global state to track if user has interacted with any video
 let hasUserInteractedGlobally = false;
+<<<<<<< HEAD
+=======
+let lastInteractionTime = 0;
+const INTERACTION_TIMEOUT = 30000; // 30 seconds
+
+// Initialize from localStorage on web
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  try {
+    const stored = localStorage.getItem('videoUserInteracted');
+    const storedTime = localStorage.getItem('videoLastInteractionTime');
+    if (stored === 'true') {
+      hasUserInteractedGlobally = true;
+    }
+    if (storedTime) {
+      lastInteractionTime = parseInt(storedTime, 10);
+    }
+  } catch (e) {
+    // localStorage not available
+  }
+}
+>>>>>>> master
 
 const VideoPlayer = ({ 
   uri, 
@@ -68,13 +99,27 @@ const VideoPlayer = ({
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [videoDimensions, setVideoDimensions] = useState({ width: VIDEO_WIDTH, height: VIDEO_HEIGHT });
   const [showOverlay, setShowOverlay] = useState(false);
+<<<<<<< HEAD
   const videoRef = useRef(null);
+=======
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const videoKey = useRef(0);
+>>>>>>> master
   const playIconAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const likeAnimationValue = useRef(new Animated.Value(0)).current;
   const [likeAnimations, setLikeAnimations] = useState([]);
   const likeAnimationRefs = useRef([]);
+<<<<<<< HEAD
+=======
+  const retryTimeoutRef = useRef(null);
+  const [quality, setQuality] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [memoryConfig, setMemoryConfig] = useState(null);
+  const lastTapTime = useRef(0);
+>>>>>>> master
 
   // Gesture handler refs
   const singleTapRef = useRef(null);
@@ -82,12 +127,28 @@ const VideoPlayer = ({
 
   // Update overlay state when video becomes active
   useEffect(() => {
+<<<<<<< HEAD
     if (Platform.OS === 'web' && !hasUserInteractedGlobally && isActive) {
+=======
+    // Only show overlay on web if user hasn't interacted and video is active
+    // Also check if interaction has timed out
+    const currentTime = Date.now();
+    const shouldShowOverlay = Platform.OS === 'web' &&
+                             !hasUserInteractedGlobally &&
+                             isActive &&
+                             (currentTime - lastInteractionTime) < INTERACTION_TIMEOUT;
+
+    if (shouldShowOverlay) {
+>>>>>>> master
       setShowOverlay(true);
     } else {
       setShowOverlay(false);
     }
+<<<<<<< HEAD
   }, [isActive]);
+=======
+  }, [isActive, hasUserInteractedGlobally]);
+>>>>>>> master
 
   // Update playing state when active state changes
   useEffect(() => {
@@ -97,6 +158,29 @@ const VideoPlayer = ({
     }
   }, [paused, isActive, isThumbnail, hasInteracted]);
 
+<<<<<<< HEAD
+=======
+  // Cleanup retry timeout on unmount or URI change
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+      setRetryCount(0);
+      setIsRetrying(false);
+    };
+  }, [uri]);
+
+  // Cleanup performance session on unmount
+  useEffect(() => {
+    return () => {
+      if (sessionId) {
+        performanceMonitor.endVideoSession(sessionId);
+      }
+    };
+  }, [sessionId]);
+
+>>>>>>> master
   useEffect(() => {
     const handleAppStateChange = (state) => {
       if (state === 'background') {
@@ -104,6 +188,7 @@ const VideoPlayer = ({
       }
     };
 
+<<<<<<< HEAD
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {
@@ -119,6 +204,115 @@ const VideoPlayer = ({
       setHasInteracted(true);
       setShowOverlay(false);
       setIsPlaying(true);
+=======
+    const handleMemoryWarning = () => {
+      console.log('Memory warning received - reducing video quality');
+      // Force lower quality settings when memory is low
+      if (memoryConfig) {
+        setMemoryConfig({
+          ...memoryConfig,
+          maxBufferMs: Math.min(memoryConfig.maxBufferMs, 3000),
+          maxBitRate: Math.min(memoryConfig.maxBitRate, 1000000),
+          resolution: 360
+        });
+      }
+    };
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+    const memoryWarningSubscription = DeviceEventEmitter.addListener('onMemoryWarning', handleMemoryWarning);
+
+    return () => {
+      appStateSubscription.remove();
+      memoryWarningSubscription.remove();
+    };
+  }, [memoryConfig]);
+
+  // Initialize optimal video quality
+  useEffect(() => {
+    const initializeQuality = async () => {
+      try {
+        // Check for cached user preference first
+        const cachedPreference = await videoCache.getUserQualityPreference();
+        if (cachedPreference) {
+          const qualityObj = VIDEO_CONFIG.adaptiveBitrate.qualities.find(q => q.resolution === cachedPreference);
+          if (qualityObj) {
+            setQuality(qualityObj);
+            return;
+          }
+        }
+
+        // Fallback to optimal quality
+        const optimalQuality = await getOptimalVideoQuality();
+        setQuality(optimalQuality);
+
+        // Cache the quality preference
+        if (optimalQuality) {
+          await videoCache.cacheUserQualityPreference(optimalQuality.resolution);
+        }
+      } catch (error) {
+        console.error('Error initializing video quality:', error);
+      }
+    };
+
+    initializeQuality();
+  }, []);
+
+  // Initialize memory-optimized configuration
+  useEffect(() => {
+    const initializeMemoryConfig = async () => {
+      try {
+        const config = await getMemoryOptimizedVideoConfig();
+        setMemoryConfig(config);
+      } catch (error) {
+        console.error('Error initializing memory config:', error);
+      }
+    };
+
+    initializeMemoryConfig();
+  }, []);
+
+
+  const handlePress = () => {
+    if (isThumbnail) return;
+
+    const currentTime = Date.now();
+
+    // Debounce rapid taps (prevent taps within 300ms of each other)
+    if (currentTime - lastTapTime.current < 300) {
+      return;
+    }
+    lastTapTime.current = currentTime;
+
+    if (Platform.OS === 'web' && !hasUserInteractedGlobally) {
+      hasUserInteractedGlobally = true;
+      lastInteractionTime = currentTime;
+      setHasInteracted(true);
+      setShowOverlay(false);
+      setIsPlaying(true);
+
+      // Persist to localStorage
+      try {
+        localStorage.setItem('videoUserInteracted', 'true');
+        localStorage.setItem('videoLastInteractionTime', currentTime.toString());
+      } catch (e) {
+        // localStorage not available
+      }
+    } else if (Platform.OS === 'web' && (currentTime - lastInteractionTime) > INTERACTION_TIMEOUT) {
+      // Reset interaction state if it's been too long
+      hasUserInteractedGlobally = true;
+      lastInteractionTime = currentTime;
+      setHasInteracted(true);
+      setShowOverlay(false);
+      setIsPlaying(true);
+
+      // Update localStorage
+      try {
+        localStorage.setItem('videoUserInteracted', 'true');
+        localStorage.setItem('videoLastInteractionTime', currentTime.toString());
+      } catch (e) {
+        // localStorage not available
+      }
+>>>>>>> master
     } else {
       const newPlayingState = !isPlaying;
       setIsPlaying(newPlayingState);
@@ -127,6 +321,12 @@ const VideoPlayer = ({
   };
 
   const showPlayPauseAnimation = () => {
+<<<<<<< HEAD
+=======
+    // Don't show play icon if user hasn't interacted yet (first interaction on web)
+    if (Platform.OS === 'web' && !hasUserInteractedGlobally) return;
+
+>>>>>>> master
     setShowPlayIcon(true);
     playIconAnim.setValue(0);
     scaleAnim.setValue(0.5);
@@ -138,10 +338,17 @@ const VideoPlayer = ({
           duration: 200,
           useNativeDriver: false,
         }),
+<<<<<<< HEAD
         Animated.delay(500),
         Animated.timing(playIconAnim, {
           toValue: 0,
           duration: 200,
+=======
+        Animated.delay(600), // Slightly longer delay
+        Animated.timing(playIconAnim, {
+          toValue: 0,
+          duration: 300,
+>>>>>>> master
           useNativeDriver: false,
         }),
       ]),
@@ -159,20 +366,97 @@ const VideoPlayer = ({
   const handleLoadStart = () => {
     setIsLoading(true);
     setError(null);
+<<<<<<< HEAD
+=======
+
+    // Start performance monitoring
+    if (uri && video) {
+      const videoId = video.id || uri.split('/').pop();
+      const newSessionId = performanceMonitor.startVideoSession(videoId, uri);
+      setSessionId(newSessionId);
+      performanceMonitor.recordLoadStart(newSessionId);
+    }
+
+>>>>>>> master
     onLoadStart?.();
   };
 
   const handleLoad = (event) => {
     setIsLoading(false);
     setError(null);
+<<<<<<< HEAD
+=======
+
+    // Record load completion in performance monitor
+    if (sessionId) {
+      performanceMonitor.recordLoadEnd(sessionId, event);
+      if (quality) {
+        performanceMonitor.setQuality(sessionId, quality);
+      }
+    }
+
+    // Cache video metadata for faster future loads
+    if (uri && event && video) {
+      const videoId = video.id || uri.split('/').pop();
+      videoCache.cacheVideoMetadata(videoId, {
+        duration: event.duration,
+        naturalSize: event.naturalSize,
+        uri: uri
+      }).catch(error => {
+        console.log('Cache metadata failed:', error);
+      });
+    }
+
+    // Preload the video for faster future access
+    if (uri) {
+      videoPreloader.preloadVideo(uri).catch(error => {
+        console.log('Preload failed:', error);
+      });
+    }
+
+>>>>>>> master
     onLoad?.(event);
   };
 
   const handleError = (err) => {
+<<<<<<< HEAD
     setIsLoading(false);
     setError(err);
     console.error('Video playback error:', err);
     onError?.(err);
+=======
+    console.error('Video playback error:', err);
+
+    // Record error in performance monitor
+    if (sessionId) {
+      performanceMonitor.recordError(sessionId, err);
+    }
+
+    // Implement retry mechanism
+    if (retryCount < 3 && !isRetrying) {
+      setIsRetrying(true);
+      setRetryCount(prev => prev + 1);
+
+      // Exponential backoff: 1s, 2s, 4s
+      const delay = Math.pow(2, retryCount) * 1000;
+
+      console.log(`Retrying video load in ${delay}ms (attempt ${retryCount + 1}/3)`);
+
+      retryTimeoutRef.current = setTimeout(() => {
+        setError(null);
+        setIsLoading(true);
+        setIsRetrying(false);
+
+        // Force reload by changing the key to remount the Video component
+        videoKey.current += 1;
+      }, delay);
+    } else {
+      setIsLoading(false);
+      setError(err);
+      setIsRetrying(false);
+      onError?.(err);
+    }
+>>>>>>> master
   };
 
   // Update dimensions on layout changes
@@ -195,14 +479,23 @@ const VideoPlayer = ({
 
   // Handle single tap (play/pause)
   const handleSingleTap = (event) => {
+<<<<<<< HEAD
     if (event.nativeEvent.state === State.ACTIVE) {
+=======
+    if (event.nativeEvent.state === State.END) {
+      // Only trigger on END state to avoid conflicts with double tap
+>>>>>>> master
       handlePress();
     }
   };
 
   // Handle double tap (like)
   const handleDoubleTap = (event) => {
+<<<<<<< HEAD
     if (event.nativeEvent.state === State.ACTIVE) {
+=======
+    if (event.nativeEvent.state === State.END) {
+>>>>>>> master
       if (onLike) {
         onLike();
         animateLike();
@@ -276,21 +569,35 @@ const VideoPlayer = ({
     });
   };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
   return (
     <View style={[styles.container, { width: videoDimensions.width, height: videoDimensions.height }, style]}>
       <TapGestureHandler
         ref={doubleTapRef}
         onHandlerStateChange={handleDoubleTap}
         numberOfTaps={2}
+<<<<<<< HEAD
         maxDelayMs={300}
         maxDurationMs={300}
+=======
+        maxDelayMs={250}
+        maxDurationMs={250}
+>>>>>>> master
       >
         <TapGestureHandler
           ref={singleTapRef}
           onHandlerStateChange={handleSingleTap}
           numberOfTaps={1}
           waitFor={doubleTapRef}
+<<<<<<< HEAD
           maxDelayMs={150}
+=======
+          maxDelayMs={200}
+          maxDurationMs={200}
+>>>>>>> master
         >
           <Animated.View style={styles.videoWrapper}>
         {(poster && !isPlaying) && (
@@ -302,6 +609,7 @@ const VideoPlayer = ({
         )}
         
         <Video
+<<<<<<< HEAD
           ref={videoRef}
           source={{ uri }}
           style={[styles.video, { opacity: (poster && !isPlaying) ? 0 : 1 }]}
@@ -320,6 +628,43 @@ const VideoPlayer = ({
 
         {/* Click to Play Overlay */}
         {showOverlay && (
+=======
+           key={videoKey.current}
+           source={{ uri }}
+           style={[styles.video, { opacity: (poster && !isPlaying) ? 0 : 1 }]}
+           resizeMode={resizeMode}
+           repeat={!isThumbnail}
+           paused={!isPlaying || showOverlay}
+           onLoadStart={handleLoadStart}
+           onLoad={handleLoad}
+           onError={handleError}
+           posterResizeMode={resizeMode}
+           muted={isThumbnail}
+           playInBackground={false}
+           playWhenInactive={false}
+           ignoreSilentSwitch="ignore"
+           bufferConfig={{
+             minBufferMs: 1000, // Reduced for faster start
+             maxBufferMs: 3000, // Reduced to prevent memory issues
+             bufferForPlaybackMs: 500, // Faster playback start
+             bufferForPlaybackAfterRebufferMs: 1000, // Reduced rebuffer time
+             backBufferDurationMs: 1000, // Reduced back buffer
+             cacheSizeMB: 50 // Limit cache size
+           }}
+           maxBitRate={memoryConfig ? memoryConfig.maxBitRate : 1000000} // Reduced for faster loading
+           selectedVideoTrack={{
+             type: "resolution",
+             value: Platform.OS === 'android' ? 480 : 720 // Optimized for mobile
+           }}
+           progressUpdateInterval={1000} // Reduced update frequency
+           currentTime={0}
+           seek={0}
+         />
+
+
+       {/* Click to Play Overlay */}
+       {showOverlay && (
+>>>>>>> master
           <View style={styles.overlay}>
             <TouchableOpacity
               style={styles.overlayButton}
@@ -332,6 +677,7 @@ const VideoPlayer = ({
         )}
 
         {isLoading && (
+<<<<<<< HEAD
           <View style={[styles.loadingContainer, { backgroundColor: 'rgba(0, 0, 0, 0.3)' }]}>
             <ActivityIndicator color="#fff" size="large" />
           </View>
@@ -345,6 +691,41 @@ const VideoPlayer = ({
             </Text>
           </View>
         )}
+=======
+          <View style={styles.skeletonContainer}>
+            <VideoSkeleton
+              showAvatar={false}
+              showUsername={false}
+              showDescription={false}
+              showActions={false}
+              showUserInfo={true}
+            />
+          </View>
+        )}
+
+        {error && !isRetrying && (
+           <View style={[styles.loadingContainer, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
+             <Ionicons name="alert-circle" size={40} color="#ff4747" />
+             <Text style={{ color: '#fff', fontSize: 14, textAlign: 'center', marginTop: 10 }}>
+               {error.message || 'Failed to load video'}
+             </Text>
+             {retryCount > 0 && (
+               <Text style={{ color: '#ccc', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
+                 Retried {retryCount} time{retryCount > 1 ? 's' : ''}
+               </Text>
+             )}
+           </View>
+         )}
+
+         {isRetrying && (
+           <View style={[styles.loadingContainer, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
+             <ActivityIndicator color="#fff" size="large" />
+             <Text style={{ color: '#fff', fontSize: 14, textAlign: 'center', marginTop: 10 }}>
+               Retrying... ({retryCount}/3)
+             </Text>
+           </View>
+         )}
+>>>>>>> master
 
         {showPlayIcon && !isThumbnail && (
           <Animated.View
@@ -461,6 +842,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+<<<<<<< HEAD
+=======
+  skeletonContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+  },
+>>>>>>> master
   errorContainer: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -512,6 +900,9 @@ const styles = StyleSheet.create({
   },
 });
 
+<<<<<<< HEAD
 import { AppState } from 'react-native';
 
+=======
+>>>>>>> master
 export default VideoPlayer;
